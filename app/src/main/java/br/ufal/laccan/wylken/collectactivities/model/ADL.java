@@ -44,7 +44,7 @@ public class ADL implements Serializable{
 
     @Override
     public String toString(){
-        return this.name;
+        return this.tag +" - "+ this.name;
     }
 
 }

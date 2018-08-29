@@ -19,7 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import br.ufal.laccan.wylken.collectactivities.DAO.ADLDAO;
 import br.ufal.laccan.wylken.collectactivities.DAO.PersonDAO;
@@ -36,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ADLDAO adlDAO;
     private PersonDAO personDAO;
     private ADL activitySelected;
+    private Person personSelected;
     private ArrayList<ADL> adls;
     private ArrayList<Person> persons;
 
@@ -52,9 +52,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.adlDAO = new ADLDAO(this);
         this.personDAO = new PersonDAO(this);
 
+        //Adding function in all buttons
+        //Activity
         functionButtonAddActivity();
         functionButtonEditActivity();
         functionButtonDeletectivity();
+        //Person
+        functionButtonAddPerson();
+        functionButtonEditPerson();
+        functionButtonDeletePerson();
+
         //startSensors();
 
     }
@@ -95,12 +102,48 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         deleteActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                confirmDelete();
+                confirmDeleteActivity();
             }
         });
     }
 
-    public void confirmDelete(){
+    private void functionButtonAddPerson() {
+
+        Button addPerson = (Button) findViewById(R.id.btn_add_person);
+        addPerson.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentAddActivity = new Intent(MainActivity.this, AddPerson.class);
+                startActivity(intentAddActivity);
+            }
+        });
+
+    }
+
+    private void functionButtonEditPerson() {
+        Button editPerson = (Button) findViewById(R.id.btn_edit_person);
+        editPerson.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentAddPerson = new Intent(MainActivity.this, AddPerson.class);
+                intentAddPerson.putExtra("person", MainActivity.this.personSelected);
+                startActivity(intentAddPerson);
+            }
+        });
+    }
+
+    private void functionButtonDeletePerson() {
+        Button deletePerson = (Button) findViewById(R.id.btn_delete_person);
+        deletePerson.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                confirmDeletePerson();
+            }
+        });
+    }
+
+
+    public void confirmDeleteActivity(){
         new AlertDialog.Builder(this)
                 .setTitle("Confirm")
                 .setMessage("Do you really want delete \""+MainActivity.this.activitySelected.getName()+"\" activity?")
@@ -115,6 +158,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 .setNegativeButton(android.R.string.no, null).show();
     }
 
+    public void confirmDeletePerson(){
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm")
+                .setMessage("Do you really want delete \""+MainActivity.this.personSelected.getName()+"\"?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        MainActivity.this.personDAO.deletePerson(MainActivity.this.personSelected);
+                        addItemSpinnerPerson();
+                        Toast.makeText(MainActivity.this, "Person deleted!", Toast.LENGTH_SHORT).show();
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+    }
+
+
     private void addItemSpinnerActivity(){
         this.spinnerActivity = (Spinner) findViewById(R.id.spinner_activity);
 
@@ -127,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         this.spinnerActivity.setAdapter(activitiesAdapter);
 
-        //Add click on item list
+        //Add click on Activity list
         this.spinnerActivity.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -152,6 +211,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         personsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         this.spinnerPerson.setAdapter(personsAdapter);
+
+        //Add click on Person list
+        this.spinnerPerson.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                MainActivity.this.personSelected = (Person) MainActivity.this.spinnerPerson.getItemAtPosition(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
     }
 

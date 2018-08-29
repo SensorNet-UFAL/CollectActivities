@@ -53,7 +53,7 @@ public class ADLDAO extends SQLiteOpenHelper{
     public ArrayList<ADL> getADLs(){
 
         SQLiteDatabase db = getReadableDatabase();
-        String sql = "SELECT * FROM "+ADLDAO.TABLE+";";
+        String sql = "SELECT * FROM "+ADLDAO.TABLE+" ORDER BY tag;";
         Cursor c = db.rawQuery(sql,null);
 
         ArrayList<ADL> adls = new ArrayList<ADL>();

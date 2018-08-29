@@ -36,7 +36,7 @@ public class PersonDAO extends SQLiteOpenHelper{
         ContentValues dados = new ContentValues();
         dados.put("name", person.getName());
         dados.put("age", person.getAge());
-        dados.put("gender", person.getTag());
+        dados.put("gender", person.getGender());
         dados.put("tag", person.getTag());
 
         return dados;
@@ -45,7 +45,7 @@ public class PersonDAO extends SQLiteOpenHelper{
     public ArrayList<Person> getPersons(){
 
         SQLiteDatabase db = getReadableDatabase();
-        String sql = "SELECT * FROM "+PersonDAO.TABLE+";";
+        String sql = "SELECT * FROM "+PersonDAO.TABLE+" ORDER BY tag;";
         Cursor c = db.rawQuery(sql,null);
 
         ArrayList<Person> persons = new ArrayList<Person>();
@@ -63,4 +63,27 @@ public class PersonDAO extends SQLiteOpenHelper{
 
         return persons;
     }
+
+    public void savePerson(Person person){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues dados = this.getValues(person);
+        db.insert(PersonDAO.TABLE, null, dados);
+    }
+
+    public void updatePerson(Person person){
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues dados = this.getValues(person);
+        String[] params ={person.getId().toString()};
+        db.update(PersonDAO.TABLE, dados, "id = ?", params);
+
+    }
+
+    public void deletePerson(Person person){
+        SQLiteDatabase db = getWritableDatabase();
+
+        String [] params = {String.valueOf(person.getId())};
+        db.delete(PersonDAO.TABLE, "id = ?", params);
+    }
+
 }

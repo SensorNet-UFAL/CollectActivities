@@ -54,7 +54,8 @@ public class Person implements Serializable {
 
     @Override
     public String toString(){
-        return this.name;
+
+        return this.tag+" - "+this.name;
     }
 
 }
