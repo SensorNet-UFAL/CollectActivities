@@ -13,6 +13,8 @@ import br.ufal.laccan.wylken.collectactivities.model.ADL;
 
 public class ADLDAO extends SQLiteOpenHelper{
 
+    static String TABLE = "Activities";
+
     public ADLDAO(Context context){
         super(context, "Activities", null, 1);
     }
@@ -30,22 +32,28 @@ public class ADLDAO extends SQLiteOpenHelper{
         onCreate(db);
     }
 
-    public void saveActivity(ADL adl){
-
-        SQLiteDatabase db = getWritableDatabase();
-
+    private ContentValues getValues (ADL adl){
         ContentValues dados = new ContentValues();
         dados.put("name", adl.getName());
         dados.put("description", adl.getDescription());
         dados.put("tag", adl.getTag());
 
-        db.insert("Activities", null, dados);
+        return dados;
+    }
+
+    public void saveActivity(ADL adl){
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues dados = this.getValues(adl);
+
+        db.insert(ADLDAO.TABLE, null, dados);
     }
 
     public ArrayList<ADL> getADLs(){
 
         SQLiteDatabase db = getReadableDatabase();
-        String sql = "SELECT * FROM Activities;";
+        String sql = "SELECT * FROM "+ADLDAO.TABLE+";";
         Cursor c = db.rawQuery(sql,null);
 
         ArrayList<ADL> adls = new ArrayList<ADL>();
@@ -61,5 +69,21 @@ public class ADLDAO extends SQLiteOpenHelper{
         c.close();
 
         return adls;
+    }
+
+    public void updateADL(ADL adl){
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues dados = this.getValues(adl);
+        String[] params ={adl.getId().toString()};
+        db.update(ADLDAO.TABLE, dados, "id = ?", params);
+
+    }
+
+    public void deleteADL(ADL adl){
+        SQLiteDatabase db = getWritableDatabase();
+
+        String [] params = {String.valueOf(adl.getId())};
+        db.delete(ADLDAO.TABLE, "id = ?", params);
     }
 }

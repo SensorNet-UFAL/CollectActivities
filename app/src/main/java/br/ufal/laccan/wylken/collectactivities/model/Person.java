@@ -1,14 +1,16 @@
 package br.ufal.laccan.wylken.collectactivities.model;
 
+import android.content.Intent;
+
 import java.io.Serializable;
 
-public class ADL implements Serializable{
+public class Person implements Serializable {
 
     private Long id;
     private String name;
-    private String description;
+    private Integer age;
+    private String gender;
     private Integer tag;
-
 
     public Long getId() {
         return id;
@@ -26,12 +28,20 @@ public class ADL implements Serializable{
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public Integer getAge() {
+        return age;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public Integer getTag() {
