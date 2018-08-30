@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 
 import br.ufal.laccan.wylken.collectactivities.DAO.ADLDAO;
 import br.ufal.laccan.wylken.collectactivities.DAO.PersonDAO;
+import br.ufal.laccan.wylken.collectactivities.commons.Math;
 import br.ufal.laccan.wylken.collectactivities.model.ADL;
 import br.ufal.laccan.wylken.collectactivities.model.Person;
 
@@ -39,10 +41,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<ADL> adls;
     private ArrayList<Person> persons;
 
+    //Variables to using at measurement.
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private int sensorType;
     private double ax,ay,az;
+    private float [] gravity;
+    private float [] linear_acceleration;
+    private final float thresholdToSensorRead = 0.05f;
+    private final float alpha = 0.8f;
+    private final short minReads = 50;
+    private short numReads = 0;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         functionButtonEditPerson();
         functionButtonDeletePerson();
 
-        //startSensors();
+        startSensors();
 
     }
 
@@ -232,8 +244,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         textY = (TextView) findViewById(R.id.y_accelerometer);
         textZ = (TextView) findViewById(R.id.z_accelerometer);
 
+        this.gravity = new float[3];
+        this.gravity[0] = 0;
+        this.gravity[1] = 0;
+        this.gravity[2] = 0;
+
+        this.linear_acceleration = new float[3];
+        this.linear_acceleration[0] = 0;
+        this.linear_acceleration[1] = 0;
+        this.linear_acceleration[2] = 0;
+
+
         //Get Sensor
-        this.sensorType = Sensor.TYPE_MAGNETIC_FIELD;
+        this.sensorType = Sensor.TYPE_ACCELEROMETER;
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(this.sensorType) != null) {
             this.accelerometer = sensorManager.getDefaultSensor(this.sensorType);
@@ -244,6 +267,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    private float [] getAcceleration(float [] values){
+
+
+        this.gravity[0] = alpha * this.gravity[0] + (1 - alpha) * values[0];
+        this.gravity[1] = alpha * this.gravity[1] + (1 - alpha) * values[1];
+        this.gravity[2] = alpha * this.gravity[2] + (1 - alpha) * values[2];
+
+        this.linear_acceleration[0] = values[0] - this.gravity[0];
+        this.linear_acceleration[1] = values[1] - this.gravity[1];
+        this.linear_acceleration[2] = values[2] - this.gravity[2];
+
+        for(int i = 0; i < this.linear_acceleration.length; i++){
+            if (this.linear_acceleration[i] < this.thresholdToSensorRead && this.linear_acceleration[i] > -this.thresholdToSensorRead){
+                this.linear_acceleration[i] = 0;
+            }
+        }
+
+        return this.linear_acceleration;
+    }
+
+
+
     @Override
     public void onAccuracyChanged(Sensor arg0, int arg1) {
     }
@@ -251,13 +296,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType()==this.sensorType){
-            ax=event.values[0];
-            ay=event.values[1];
-            az=event.values[2];
 
-            textX.setText(String.format("%.4f", ax));
-            textY.setText(String.format("%.4f", ay));
-            textZ.setText(String.format("%.4f", az));
+            if(this.numReads > this.minReads){
+                this.getAcceleration(event.values);
+                ax= this.linear_acceleration[0];
+                ay= this.linear_acceleration[1];
+                az= this.linear_acceleration[2];
+
+                textX.setText(String.format("%.4f", ax));
+                textY.setText(String.format("%.4f", ay));
+                textZ.setText(String.format("%.4f", az));
+
+            }
+            else{
+                numReads += 1;
+            }
+
         }
     }
 }
