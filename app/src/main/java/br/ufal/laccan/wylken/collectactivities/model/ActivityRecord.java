@@ -4,6 +4,8 @@ import java.util.Date;
 
 public class ActivityRecord {
 
+    public static final short SENSOR_TYPE_ACCELEROMETER = 0;
+
     private float x;
     private float y;
     private float z;

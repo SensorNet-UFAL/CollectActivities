@@ -7,10 +7,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
+import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,26 +23,33 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import br.ufal.laccan.wylken.collectactivities.DAO.ADLDAO;
+import br.ufal.laccan.wylken.collectactivities.DAO.ActivityRecordDAO;
 import br.ufal.laccan.wylken.collectactivities.DAO.PersonDAO;
-import br.ufal.laccan.wylken.collectactivities.commons.Math;
 import br.ufal.laccan.wylken.collectactivities.model.ADL;
+import br.ufal.laccan.wylken.collectactivities.model.ActivityRecord;
 import br.ufal.laccan.wylken.collectactivities.model.Person;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
+    private Vibrator vibrator;
     private Spinner spinnerActivity;
     private Spinner spinnerPerson;
     private TextView textX;
     private TextView textY;
     private TextView textZ;
+    private Button startButton;
+    private Button stopButton;
     private ADLDAO adlDAO;
     private PersonDAO personDAO;
+    private ActivityRecordDAO activityRecordDAO;
     private ADL activitySelected;
     private Person personSelected;
     private ArrayList<ADL> adls;
     private ArrayList<Person> persons;
+    private ArrayList<ActivityRecord> activityRecordList;
 
     //Variables to using at measurement.
     private SensorManager sensorManager;
@@ -52,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final float alpha = 0.8f;
     private final short minReads = 50;
     private short numReads = 0;
+    private boolean recordedActivityFlag = false;
 
 
 
@@ -61,10 +72,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        this.activityRecordList = null;
+
         this.adlDAO = new ADLDAO(this);
         this.personDAO = new PersonDAO(this);
+        this.activityRecordDAO = new ActivityRecordDAO(this);
 
         //Adding function in all buttons
+        //Start and Stop
+        functionButtonStart();
+        functionButtonStop();
         //Activity
         functionButtonAddActivity();
         functionButtonEditActivity();
@@ -84,6 +103,71 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         addItemSpinnerActivity();
         addItemSpinnerPerson();
 
+    }
+
+    private void vibrate(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE));
+        }else{
+            //deprecated in API 26
+            this.vibrator.vibrate(500);
+        }
+    }
+
+    Runnable startRecordActivity  = new Runnable() {
+        @Override
+        public void run() {
+            MainActivity.this.vibrate();
+            MainActivity.this.recordedActivityFlag = true;
+        }
+    };
+
+    private void functionButtonStart() {
+        this.startButton= (Button) findViewById(R.id.btn_start);
+        this.startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Handler myHandler = new Handler();
+
+                myHandler.postDelayed(MainActivity.this.startRecordActivity, 3000);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setCancelable(true);
+                builder.setTitle("Activity");
+                builder.setMessage("Recording data of activity....");
+                builder.setPositiveButton("Save recording",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                MainActivity.this.saveRecords();
+                                Toast.makeText(MainActivity.this, "Activity Recorded", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        Toast.makeText(MainActivity.this, "Unsaved Activity!", Toast.LENGTH_SHORT).show();
+                        MainActivity.this.cancelRecordActivity();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+
+        });
+        this.startButton.setEnabled(false);
+    }
+
+    private void functionButtonStop() {
+        this.stopButton= (Button) findViewById(R.id.btn_stop);
+        this.stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        this.stopButton.setEnabled(false);
     }
 
     private void functionButtonEditActivity() {
@@ -261,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (sensorManager.getDefaultSensor(this.sensorType) != null) {
             this.accelerometer = sensorManager.getDefaultSensor(this.sensorType);
             sensorManager.registerListener(this, sensorManager.getDefaultSensor(this.sensorType), SensorManager.SENSOR_DELAY_NORMAL);
-            Toast.makeText(this, "Sensor Iniciado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Calibrando acelerômetro ...", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(this, "Erro ao ler sensor!", Toast.LENGTH_SHORT).show();
         }
@@ -287,7 +371,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return this.linear_acceleration;
     }
 
+    public void cancelRecordActivity(){
+        this.recordedActivityFlag = false;
+        this.activityRecordList = null;
+    }
 
+    public boolean saveRecords(){
+        if(this.activityRecordList != null){
+            this.activityRecordDAO.saveActivityRecord(this.activityRecordList);
+            this.cancelRecordActivity();
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public void onAccuracyChanged(Sensor arg0, int arg1) {
@@ -298,6 +394,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (event.sensor.getType()==this.sensorType){
 
             if(this.numReads > this.minReads){
+
                 this.getAcceleration(event.values);
                 ax= this.linear_acceleration[0];
                 ay= this.linear_acceleration[1];
@@ -307,11 +404,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 textY.setText(String.format("%.4f", ay));
                 textZ.setText(String.format("%.4f", az));
 
+                if(this.recordedActivityFlag){
+                    this.recordedActivity();
+                }
             }
             else{
                 numReads += 1;
             }
 
+            if(this.numReads == this.minReads){
+                this.startButton.setEnabled(true);
+                Toast.makeText(this, "Sensor pronto para uso.", Toast.LENGTH_SHORT).show();
+            }
+
         }
+    }
+
+    private void recordedActivity() {
+        if(this.activityRecordList == null){
+            this.activityRecordList = new ArrayList<ActivityRecord>();
+        }
+
+        ActivityRecord activity = new ActivityRecord();
+        activity.setActivity_tag(this.activitySelected.getTag().shortValue());
+        activity.setPerson_tag(this.personSelected.getTag().shortValue());
+        activity.setSensor_type(ActivityRecord.SENSOR_TYPE_ACCELEROMETER);
+        activity.setX(this.linear_acceleration[0]);
+        activity.setY(this.linear_acceleration[1]);
+        activity.setZ(this.linear_acceleration[2]);
+        activity.setTime(Calendar.getInstance().getTime());
+
+        this.activityRecordList.add(activity);
     }
 }
