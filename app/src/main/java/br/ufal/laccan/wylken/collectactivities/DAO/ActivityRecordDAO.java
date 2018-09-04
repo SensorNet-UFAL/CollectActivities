@@ -4,20 +4,32 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
+import android.util.Log;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import br.ufal.laccan.wylken.collectactivities.MainActivity;
 import br.ufal.laccan.wylken.collectactivities.model.ActivityRecord;
 
 
 public class ActivityRecordDAO extends SQLiteOpenHelper{
 
-    static String TABLE = "ActivityRecords";
-    private SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:MM:SS.SSS");
+    static public String TABLE = "ActivityRecords";
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD HH:MM:SS.SSS");
+    private Context context;
 
     public ActivityRecordDAO(Context context){
         super(context, ActivityRecordDAO.TABLE, null, 1);
+        this.context = context;
     }
 
     @Override
@@ -54,7 +66,9 @@ public class ActivityRecordDAO extends SQLiteOpenHelper{
             db.insert(ActivityRecordDAO.TABLE, null, dados);
         }
 
-        return false;
+        return true;
     }
+
+
 
 }

@@ -13,7 +13,7 @@ import br.ufal.laccan.wylken.collectactivities.model.ADL;
 
 public class ADLDAO extends SQLiteOpenHelper{
 
-    static String TABLE = "Activities";
+    static public String TABLE = "Activities";
 
     public ADLDAO(Context context){
         super(context, "Activities", null, 1);

@@ -13,7 +13,7 @@ import br.ufal.laccan.wylken.collectactivities.model.Person;
 
 public class PersonDAO extends SQLiteOpenHelper{
 
-    static String TABLE = "Persons";
+    static public String TABLE = "Persons";
 
     public PersonDAO(Context context){
         super(context, PersonDAO.TABLE, null, 1);

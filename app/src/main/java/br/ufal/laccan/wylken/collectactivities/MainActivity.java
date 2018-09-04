@@ -14,6 +14,7 @@ import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,6 +29,7 @@ import java.util.Calendar;
 import br.ufal.laccan.wylken.collectactivities.DAO.ADLDAO;
 import br.ufal.laccan.wylken.collectactivities.DAO.ActivityRecordDAO;
 import br.ufal.laccan.wylken.collectactivities.DAO.PersonDAO;
+import br.ufal.laccan.wylken.collectactivities.commons.Files;
 import br.ufal.laccan.wylken.collectactivities.model.ADL;
 import br.ufal.laccan.wylken.collectactivities.model.ActivityRecord;
 import br.ufal.laccan.wylken.collectactivities.model.Person;
@@ -41,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView textY;
     private TextView textZ;
     private Button startButton;
-    private Button stopButton;
+    private Button exportButton;
     private ADLDAO adlDAO;
     private PersonDAO personDAO;
     private ActivityRecordDAO activityRecordDAO;
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<ADL> adls;
     private ArrayList<Person> persons;
     private ArrayList<ActivityRecord> activityRecordList;
-
+    private Files files;
     //Variables to using at measurement.
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -79,11 +81,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.adlDAO = new ADLDAO(this);
         this.personDAO = new PersonDAO(this);
         this.activityRecordDAO = new ActivityRecordDAO(this);
+        this.files = new Files(this);
 
         //Adding function in all buttons
         //Start and Stop
         functionButtonStart();
-        functionButtonStop();
+        functionButtonExport();
         //Activity
         functionButtonAddActivity();
         functionButtonEditActivity();
@@ -122,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     };
 
+
     private void functionButtonStart() {
         this.startButton= (Button) findViewById(R.id.btn_start);
         this.startButton.setOnClickListener(new View.OnClickListener() {
@@ -159,15 +163,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.startButton.setEnabled(false);
     }
 
-    private void functionButtonStop() {
-        this.stopButton= (Button) findViewById(R.id.btn_stop);
-        this.stopButton.setOnClickListener(new View.OnClickListener() {
+    private void functionButtonExport() {
+        this.exportButton= (Button) findViewById(R.id.btn_export);
+        this.exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                MainActivity.this.files.exportDB();
             }
         });
-        this.stopButton.setEnabled(false);
+        //this.exportButton.setEnabled(false);
     }
 
     private void functionButtonEditActivity() {

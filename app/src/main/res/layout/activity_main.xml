@@ -114,19 +114,19 @@
         </LinearLayout>
 
 
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:text="Raw Data:" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="0dp"
             android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="1"
-                android:text="Raw Data:" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -134,28 +134,30 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="10dp"
                 android:text="X:" />
+
             <TextView
                 android:id="@+id/x_accelerometer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="x"/>
+                android:text="x" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="40dp"
+                android:layout_marginLeft="20dp"
                 android:layout_marginRight="10dp"
                 android:text="Y:" />
+
             <TextView
                 android:id="@+id/y_accelerometer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="y"/>
+                android:text="y" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="40dp"
+                android:layout_marginLeft="20dp"
                 android:layout_marginRight="10dp"
                 android:text="Z:" />
 
@@ -181,14 +183,14 @@
                 android:layout_weight="1"
                 android:text="Start" />
 
-            <Button
-                android:id="@+id/btn_stop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Stop" />
-
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_export"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Export" />
     </LinearLayout>
 
 
