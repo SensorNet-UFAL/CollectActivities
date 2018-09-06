@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView textZ;
     private Button startButton;
     private Button exportButton;
+    private Button excludeRecordsButton;
     private ADLDAO adlDAO;
     private PersonDAO personDAO;
     private ActivityRecordDAO activityRecordDAO;
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //Start and Stop
         functionButtonStart();
         functionButtonExport();
+        functionButtonExcludeRecords();
         //Activity
         functionButtonAddActivity();
         functionButtonEditActivity();
@@ -172,6 +174,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
         //this.exportButton.setEnabled(false);
+    }
+
+    private void functionButtonExcludeRecords() {
+
+        this.excludeRecordsButton = (Button) findViewById(R.id.btn_exclude_records);
+
+        this.excludeRecordsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Confirm")
+                        .setMessage("Do you really want delete all activity records?")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                MainActivity.this.activityRecordDAO.delete();
+                                Toast.makeText(MainActivity.this, "Activity Records deleted!", Toast.LENGTH_SHORT).show();
+                            }})
+                        .setNegativeButton(android.R.string.no, null).show();
+            }
+        });
+
     }
 
     private void functionButtonEditActivity() {

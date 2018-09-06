@@ -45,6 +45,12 @@ public class ActivityRecordDAO extends SQLiteOpenHelper{
         onCreate(db);
     }
 
+    public void delete(){
+        SQLiteDatabase db = getWritableDatabase();
+        String sql = "DROP TABLE IF EXISTS "+ActivityRecordDAO.TABLE;
+        db.execSQL(sql);
+    }
+
     private ContentValues getValues (ActivityRecord activityRecord){
         ContentValues dados = new ContentValues();
         dados.put("x", activityRecord.getX());
