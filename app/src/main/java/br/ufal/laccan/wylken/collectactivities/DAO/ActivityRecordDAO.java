@@ -49,6 +49,7 @@ public class ActivityRecordDAO extends SQLiteOpenHelper{
         SQLiteDatabase db = getWritableDatabase();
         String sql = "DROP TABLE IF EXISTS "+ActivityRecordDAO.TABLE;
         db.execSQL(sql);
+        onCreate(db);
     }
 
     private ContentValues getValues (ActivityRecord activityRecord){
@@ -67,10 +68,20 @@ public class ActivityRecordDAO extends SQLiteOpenHelper{
 
         SQLiteDatabase db = getWritableDatabase();
 
-        for(ActivityRecord activityRecord : activitiRecordList){
-            ContentValues dados = this.getValues(activityRecord);
+        Integer f = activitiRecordList.size() - 10;
+        Toast.makeText(this.context, "N = "+activitiRecordList.size(), Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this.context, "F = "+f.toString(), Toast.LENGTH_SHORT).show();
+
+        for(int i = 0; i < f; i++){
+            ContentValues dados = this.getValues(activitiRecordList.get(i));
             db.insert(ActivityRecordDAO.TABLE, null, dados);
         }
+
+        /*for(ActivityRecord activityRecord : activitiRecordList){
+            ContentValues dados = this.getValues(activityRecord);
+            db.insert(ActivityRecordDAO.TABLE, null, dados);
+        }*/
 
         return true;
     }
